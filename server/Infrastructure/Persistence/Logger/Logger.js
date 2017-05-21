@@ -32,6 +32,10 @@ class Logger extends EventEmitter {
   info (message) {
     this.executor.info(message)
   }
+
+  error (message) {
+    this.executor.error(message)
+  }
 }
 
 export default new Logger()
