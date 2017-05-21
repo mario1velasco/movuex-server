@@ -1,13 +1,11 @@
 import http from 'http'
 import express from 'express'
-import bodyParser from 'body-parser'
 import socketio from 'socket.io'
-import cors from 'cors'
 import { realTime } from './realTime'
-import { requestLogger } from './middlewares/requestLogger'
-import { configureMongo } from './Infrastructure/Persistence/mongoose'
+import { BaseMiddlewares } from './middlewares/Base'
+import { configureMongo } from './Infrastructure/Persistence/Mongo/mongoose'
 
-import api from './api/api'
+import ApiRoutes from './router/ShowsRoutes'
 
 configureMongo()
 
@@ -15,11 +13,10 @@ const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
 
-app.use(cors())
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}))
-app.use(requestLogger())
-app.use('/api', api)
+const middlewares = new BaseMiddlewares(app)
+middlewares.config()
+
+app.use('/api', new ApiRoutes().createRoutes())
 
 let port = process.env.PORT || 3000
 
