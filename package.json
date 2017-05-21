@@ -1,12 +1,13 @@
 {
   "name": "movuex-server",
   "version": "0.0.1",
-  "description": "> A Vue.js project",
+  "description": "> A Node.js project",
   "main": "index.js",
   "scripts": {
     "node-path": ". ./bash/node_path.sh",
-    "start": "npm run node-path && pm2 start server/bin/dev.js",
-    "start-watch": "npm run node-path && pm2 start server/bin/dev.js --watch",
+    "start": "npm run node-path && node server/bin/dev",
+    "start-pm2": "npm run node-path && pm2 start server/bin/dev.js --name server",
+    "start-watch": "npm run node-path && pm2 start server/bin/dev.js --watch --name server",
     "production": "node server/bin/production.js",
     "lint": "standard",
     "test-coverage": "NODE_ENV=test ./node_modules/nyc/bin/nyc.js npm test",
@@ -47,10 +48,12 @@
   },
   "dependencies": {
     "body-parser": "^1.17.2",
+    "cors": "^2.8.3",
     "express": "^4.15.3",
     "mongoose": "^4.10.0",
     "pm2": "^2.4.6",
     "socket.io": "^2.0.1",
-    "tvmaze-zucchinidev": "0.0.4"
+    "tvmaze-zucchinidev": "0.0.4",
+    "winston": "^2.3.1"
   }
 }
