@@ -13,4 +13,3 @@ const VoteSchema = new mongoose.Schema({
 })
 
 export default mongoose.model('Vote', VoteSchema)
-
