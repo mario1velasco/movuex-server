@@ -11,8 +11,9 @@ export class UserController extends BaseController {
     try {
       const user = req.user
       this.userBusiness.logged(user)
-        // .then(response => res.send(response))
-        // .catch(this.checkForError.bind(res))
+        .then(response => res.send(response))
+        .catch(this.checkForError.bind(res))
+
     } catch (err) {
       this.checkForError(res, err)
     }
