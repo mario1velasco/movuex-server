@@ -1,27 +1,21 @@
 import http from 'http'
 import express from 'express'
-import socketio from 'socket.io'
-import { realTime } from './realTime'
-import { BaseMiddlewares } from './middlewares/Base'
-import { configureMongo } from './Infrastructure/Persistence/Mongo/mongoose'
+import { Socket } from './config/components/socket'
+import { BaseMiddlewares } from './config/middlewares/base.middlewares'
+import { connectWithMongoDB } from './config/infrastructure/persistence/mongo/mongoose'
+import { BaseRoutes } from './routes/base.routes'
 
-import ApiRoutes from './router/ShowsRoutes'
-
-configureMongo()
+connectWithMongoDB()
 
 const app = express()
 const server = http.createServer(app)
-const io = socketio(server)
-
-const middlewares = new BaseMiddlewares(app)
-middlewares.config()
-
-app.use('/api', new ApiRoutes().createRoutes())
-
-let port = process.env.PORT || 3000
-
-io.on('connection', (socket) => {
+const socket = Socket.getInstance(server)
+socket.on('socket-opened', (socket) => {
   console.log(`Connected socket with id: ${socket.id}`)
-  realTime(io, socket)
 })
-server.listen(port, () => console.log('server listen to port 3000'))
+
+BaseMiddlewares.config(app)
+BaseRoutes.createRoutes(app)
+
+const port = process.env.PORT || 3000
+server.listen(port, () => console.log(`server listen to port ${port}`))
