@@ -36,7 +36,7 @@ export class Passport {
     // make the code asynchronous
     // User.findOne won't fire until we have all our data back from Twitter
     process.nextTick(() => {
-      User.findOne({ 'twitter.id': profile.id }, function (err, user) {
+      User.findOne({ 'twitter.id': profile.id }, (err, user) => {
         if (err) {
           return done(err)
         }
