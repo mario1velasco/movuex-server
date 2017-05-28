@@ -6,10 +6,7 @@ export class UserBusiness {
   }
 
   logged (user) {
-    console.log(user)
-    // return this.repository
-    //   .find({})
-    //   .limit(10)
-    //   .then(ShowsBusiness.showsWithImage)
+    const vote = Object.assign(new User(), user)
+    return vote.save()
   }
 }
