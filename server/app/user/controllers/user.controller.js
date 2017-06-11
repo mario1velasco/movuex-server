@@ -7,13 +7,17 @@ export class UserController extends BaseController {
     this.userBusiness = new UserBusiness()
   }
 
-  logged (req, res) {
+  profile (req, res) {
     try {
-      const user = req.user
+      const user = req.user.toJSON()
       this.userBusiness.logged(user)
-        .then(response => res.send(response))
+        .then(response => {
+          res.send({
+            msg: 'Logged',
+            user: user
+          })
+        })
         .catch(this.checkForError.bind(res))
-
     } catch (err) {
       this.checkForError(res, err)
     }
