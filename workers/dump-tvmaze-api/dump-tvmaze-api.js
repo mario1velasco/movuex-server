@@ -1,10 +1,9 @@
 import { sync } from 'tvmaze-sync'
-import Constants from '../../server/config/infrastructure/persistence/mongo/constants'
 const constants = {
   mongo: {
-    dbConnection: Constants.DB_CONNECTION_STRING,
-    dbName: Constants.DB_COLLECTION_NAME,
-    collectionName: 'shows'
+    dbConnection: 'mongodb://localhost:27017',
+    dbName: 'tvmaze_sync',
+    collectionName: 'sync'
   },
   request: {
     maxNumberOfPages: 200,
