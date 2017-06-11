@@ -1,48 +1,6 @@
 import EventEmitter from 'events'
 
 export class Synchronizer extends EventEmitter {
-  constructor (appConnection, syncConnection) {
-    super()
-    this.appConnection = appConnection
-    this.syncConnection = syncConnection
-  }
-
-  sync () {
-    this.syncConnection.find({})
-      .then(Synchronizer.onRetrieveDocuments)
-      .then(this.insertBatches.bind(this))
-  }
-
-  static onRetrieveDocuments (response) {
-    const docs = response
-      .filter(Synchronizer.hasImage)
-      .map(Synchronizer.transformDataToDomain)
-    return Promise.resolve(docs)
-  }
-
-  insertBatches (docs) {
-    const getSlice = Synchronizer.getSlice(docs)
-    this.insertBatch(docs.length, getSlice, 0)
-  }
-
-  insertBatch (max, getSlice, accumulator) {
-    const slice = getSlice()
-    accumulator += slice.length
-    Promise.all(slice.map(this.upsertDocument.bind(this)))
-      .then(() => {
-        if (accumulator < max) {
-          this.insertBatch(max, getSlice, accumulator)
-        } else {
-          this.emit('sync-completed')
-          process.exit(0)
-        }
-      })
-      .catch(err => {
-        console.log(err)
-        process.exit(1)
-      })
-  }
-
   static getSlice (docs) {
     let init = 0
     return () => {
@@ -55,27 +13,15 @@ export class Synchronizer extends EventEmitter {
   }
 
   static hasImage (document) {
-    return typeof document.image !== 'undefined'
+    return typeof document.image !== 'undefined' && document.image !== null
   }
 
-  upsertDocument (document) {
-    const query = { showId: document.showId }
-    return this.appConnection.upsert(query, document)
-      .then((response) => {
-        let msg
-        if (typeof response.matchedCount !== 'undefined' && response.matchedCount === 0) {
-          msg = `Inserted document with showId: ${document.showId}`
-        } else {
-          msg = `Updated docuement with showId: ${document.showId}`
-        }
-        console.log(msg)
-        return response
-      }).catch(err => {
-        console.log(err)
-        console.log('Error ocurrido')
-      })
+  static onRetrieveDocuments (response) {
+    const docs = response
+      .filter(Synchronizer.hasImage)
+      .map(Synchronizer.transformDataToDomain)
+    return Promise.resolve(docs)
   }
-
   static transformDataToDomain (document) {
     const {
       id: showId,
@@ -90,6 +36,7 @@ export class Synchronizer extends EventEmitter {
     const premiered = Synchronizer.getPremiered(document)
     const externalRating = Synchronizer.getRating(document)
     const network = Synchronizer.getNetwork(document)
+    const summary = Synchronizer.getSummary(document)
     return {
       showId,
       name,
@@ -101,7 +48,8 @@ export class Synchronizer extends EventEmitter {
       premiered,
       schedule,
       externalRating,
-      network
+      network,
+      summary
     }
   }
 
@@ -136,5 +84,66 @@ export class Synchronizer extends EventEmitter {
       }
     }
     return result
+  }
+
+  static getSummary (document) {
+    return document.summary || ''
+  }
+
+  constructor (appConnection, syncConnection) {
+    super()
+    this.appConnection = appConnection
+    this.syncConnection = syncConnection
+  }
+
+  sync () {
+    this.syncConnection.find({})
+      .then(Synchronizer.onRetrieveDocuments)
+      .then(this.insertBatches.bind(this))
+  }
+
+  insertBatches (docs) {
+    const getSlice = Synchronizer.getSlice(docs)
+    this.insertBatch(docs.length, getSlice, 0)
+  }
+
+  insertBatch (max, getSlice, accumulator) {
+    const slice = getSlice()
+    accumulator += slice.length
+    Promise.all(slice.map(this.upsertDocument.bind(this)))
+      .then(() => {
+        if (accumulator < max) {
+          this.insertBatch(max, getSlice, accumulator)
+        } else {
+          this.emit('sync-completed')
+          process.exit(0)
+        }
+      })
+      .catch(err => {
+        console.log(err)
+        process.exit(1)
+      })
+  }
+
+  upsertDocument (document) {
+    const query = { showId: document.showId }
+    return this.appConnection.update(query, Synchronizer.getUpdateOperators(document), { upsert: true })
+      .then((response) => {
+        console.log(`Inserted document with showId: ${document.showId}`)
+        return response
+      }).catch(err => {
+        console.log(err)
+        console.log('Error ocurrido')
+      })
+  }
+
+  static getUpdateOperators (document) {
+    return Object.keys(document).reduce((acc, key) => {
+      acc.$set[key] = document[key]
+      return acc
+    }, {
+      $set: {},
+      $setOnInsert: {notes: [], votes: 0}
+    })
   }
 }

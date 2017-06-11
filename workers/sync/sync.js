@@ -3,7 +3,7 @@ import { Synchronizer } from './synchronizer'
 
 const syncConnection = new MongoClient({
   dbConnection: 'mongodb://localhost:27017',
-  dbName: 'tvmaze_sync_test_2017426',
+  dbName: 'tvmaze_sync_201759',
   collectionName: 'sync'
 })
 const appConnection = new MongoClient({

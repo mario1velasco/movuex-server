@@ -72,10 +72,10 @@ export class MongoClient {
       .then(col => col.insert(document))
   }
 
-  update (query, document) {
+  update (query, document, options) {
     query = MongoClient.getObjectId(query)
     return this.connecting()
-      .then(col => col.update(query, document))
+      .then(col => col.update(query, document, options))
   }
 
   deleteOne (query) {
