@@ -17,12 +17,23 @@ export class ShowsBusiness {
       .then(ShowsBusiness.showsWithImage)
   }
 
-  getShow (id) {
-    return this.repository.findOne({ showId: id })
+  getShow (showId) {
+    return this.repository.findOne({ showId })
   }
 
   search (showName) {
     return this.repository.find({ name: new RegExp('' + showName + '', 'i') })
       .then(ShowsBusiness.showsWithImage)
+  }
+
+  addVote (showId) {
+    return this.repository
+      .findOneAndUpdate({ showId }, { $inc: { votes: 1 } }, {new: true})
+  }
+
+  addNote (showId, note) {
+    return this.repository
+      .findOneAndUpdate({ showId }, { $push: { notes: note } }, {new: true})
+      .then(response => response)
   }
 }
