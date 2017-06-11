@@ -1,8 +1,13 @@
-import { User } from '../../../app/user/models/user.model'
 import { authConfig } from '../auth/auth'
 import Strategy from 'passport-twitter'
+import { UserBusiness } from '../../../app/user/business/user.business'
 
 export class Passport {
+
+  static get userBusiness () {
+    return new UserBusiness()
+  }
+
   static configure (passport) {
     Passport.serializeUser(passport)
     Passport.deserializeUser(passport)
@@ -15,48 +20,61 @@ export class Passport {
       consumerSecret: authConfig.twitterAuth.consumerSecret,
       callbackURL: authConfig.twitterAuth.callbackURL
     }
+    // flow:
+    // estratégia -> callback de la estratégia con los parámetros que le lleguen
+    // dependiendo de la estratégia seleccionada.
+    // con el done() de la estratégia->
+    // se ejecuta serializeUser, esto guarda en sesión los datos que nosotros
+    // necesitemos para la siguiente función que será la de deserializeUser, por
+    // ejemplo lo que necesitemos para buscar el usuario en la base de datos
     passport.use(new Strategy(twitterConfiguration, Passport.onUseTwitterStrategy))
   }
 
   static deserializeUser (passport) {
-    passport.deserializeUser(function (id, done) {
-      User.findById(id, function (err, user) {
-        done(err, user)
-      })
+    passport.deserializeUser((id, done) => {
+      Passport.userBusiness.findUser({ 'twitter.id': id })
+        .then(user => {
+          done(null, user)
+        })
+        .catch(err => {
+          done(err)
+        })
     })
   }
 
   static serializeUser (passport) {
-    passport.serializeUser(function (user, done) {
-      done(null, user.id)
+    passport.serializeUser((id, done) => {
+      done(null, id)
     })
   }
 
-  static onUseTwitterStrategy (token, tokenSecret, profile, done) {
-    // make the code asynchronous
-    // User.findOne won't fire until we have all our data back from Twitter
+  static onUseTwitterStrategy (token, _, profile, done) {
     process.nextTick(() => {
-      User.findOne({ 'twitter.id': profile.id }, (err, user) => {
-        if (err) {
-          return done(err)
-        }
-
-        if (user) {
-          return done(null, user)
-        } else {
-          const newUser = new User()
-          newUser.twitter.id = profile.id
-          newUser.twitter.token = token
-          newUser.twitter.username = profile.username
-          newUser.twitter.displayName = profile.displayName
-          newUser.save(function (err) {
-            if (err) {
-              throw err
-            }
-            return done(null, newUser)
-          })
-        }
-      })
+      const { id } = profile
+      Passport.userBusiness
+        .findUser({ 'twitter.id': id })
+        .then(Passport.onCompletedSearchUser(done, { profile, token }))
+        .catch(err => {
+          throw err
+        })
     })
+  }
+
+  static onCompletedSearchUser (done, { profile, token }) {
+    return (user) => {
+      if (user) {
+        const { id } = user.twitter
+        done(null, id)
+      } else {
+        Passport.userBusiness
+          .createUserFromTwitterProfile(profile, token)
+          .then(() => {
+            return done(null, profile.id)
+          })
+          .catch(err => {
+            throw err
+          })
+      }
+    }
   }
 }
