@@ -1,0 +1,38 @@
+start on runlevel [2345] # si el so arranca en el nivel 2,3,4 o 5 vamos a ejecutar este servicio
+stop on runlevel [!2345] # en caso contrario matamos el proceso
+
+respawn # volver a ejecutar el proceso si se cae
+respawn limit 10 5 # límite de no reiniciar más de 10 veces en 5 segundos
+
+setuid root # el usuario root va a ejecutar esta aplicación
+chdir /opt/movuex/package # Lugar de la aplicación
+
+env NODE_ENV=production
+env PORT=3000
+
+exec npm start # compilación verificación de todo el proyecto
+
+
+
+upstream io_nodes {
+  ip_hash; # definemos stiky session, un mismo cliente a un mismo nodo
+  server 127.0.0.1:3000;
+  server 127.0.0.1:3001;
+  server 127.0.0.1:3002;
+}
+
+server {
+  listen 80;
+  server_name movuex.com;
+
+  # para la ruta principal
+  location / {
+    # que cabeceras le vamos al nodo de node.js
+    proxy_set_header Upgrade $http_upgrade; # utilizada cuando la petición de websocket se actualiza a la conexión
+    proxy_set_header Connection "upgrade"; # hacemos upgrade conexión
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; # para obtener la ip de la persona
+    proxy_set_header Host $host; # pasamos el header del host
+    proxy_http_version 1.1; # pasamos la versión de http
+    proxy_pass http://io_nodes; # proxy_pass, es decir pasamos la petición a los io_nodes creados arriba
+  }
+}
