@@ -9,4 +9,13 @@ export class BaseRoutes {
     app.use('/api/shows', showRoutes.createRoutes())
     app.use('/user', userRoutes.createRoutes())
   }
+
+  static authenticate (req, res, next) {
+    if (req.isAuthenticated()) {
+      return next()
+    }
+    res.status(401).json({
+      msg: 'Unauthorized'
+    })
+  }
 }

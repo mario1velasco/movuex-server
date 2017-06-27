@@ -11,8 +11,8 @@ export class UserRoutes {
   createRoutes () {
     this.router.get('/twitter', this.passport.authenticate('twitter', { scope: 'email' }))
     this.router.get('/twitter/callback', this.passport.authenticate('twitter', {
-      successRedirect: '/user/profile',
-      failureRedirect: '/user/profile'
+      successRedirect: '/',
+      failureRedirect: '/'
     }))
 
     this.router.get('/profile',
@@ -23,11 +23,10 @@ export class UserRoutes {
 
     this.router.get('/connect/twitter/callback',
       this.passport.authorize('twitter', {
-        successRedirect: '/user/profile',
-        failureRedirect: '/user/profile'
+        successRedirect: '/',
+        failureRedirect: '/'
       }))
-
-    this.router.get('/unlink/twitter', this.controller.isLoggedIn, this.controller.unlinkTwitter)
+    // this.router.get('/unlink/twitter', this.controller.isLoggedIn, this.controller.unlinkTwitter)
     return this.router
   }
 }

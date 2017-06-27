@@ -3,7 +3,6 @@ import Strategy from 'passport-twitter'
 import { UserBusiness } from '../../../app/user/business/user.business'
 
 export class Passport {
-
   static get userBusiness () {
     return new UserBusiness()
   }
