@@ -1,5 +1,6 @@
 import http from 'http'
 import path from 'path'
+import cors from 'cors'
 import express from 'express'
 import { default as socket } from './config/components/socket/socket'
 import { BaseMiddlewares } from './config/middlewares/base.middlewares'
@@ -14,6 +15,7 @@ Passport.configure(passport)
 connectWithMongoDB()
 
 const app = express()
+app.use(cors())
 const distDir = path.resolve(__dirname, '../public')
 app.use(express.static(distDir))
 app.set('port', port)
