@@ -14,7 +14,7 @@ Passport.configure(passport)
 connectWithMongoDB()
 
 const app = express()
-const distDir = path.resolve(__dirname, '../../movuex-bulma/dist')
+const distDir = path.resolve(__dirname, '../public')
 app.use(express.static(distDir))
 app.set('port', port)
 
