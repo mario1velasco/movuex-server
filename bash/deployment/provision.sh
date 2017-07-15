@@ -20,7 +20,7 @@ cp /root/config/movuex-3.conf /etc/init
 ## Install movuex
 rm -rf /opt/movuex
 mkdir -p /opt/movuex
-tar xvfz /root/movuex-0.1.0.tgz -C /opt/movuex
+tar xvfz /root/movuex-server-0.1.0.tgz -C /opt/movuex
 cd /opt/movuex/package && npm install
 
 ## Run services
