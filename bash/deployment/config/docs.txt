@@ -15,7 +15,7 @@ exec npm start # compilación verificación de todo el proyecto
 
 
 upstream io_nodes {
-  ip_hash; # definemos stiky session, un mismo cliente a un mismo nodo
+  ip_hash; # definemos stiky session, un mismo cliente a un mismo nodo, si eliminamos esto estaríamos haciendo un round robin
   server 127.0.0.1:3000;
   server 127.0.0.1:3001;
   server 127.0.0.1:3002;
