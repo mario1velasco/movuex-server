@@ -8,8 +8,10 @@ apt-get install -y build-essential git nginx libkrb5-dev
 apt-get install -y mongodb redis-server
 
 ## Install Node.js 6x from NodeSource Distributions
-curl -sL https://deb.nodesource.com/setup_6.x | -E bash -
+echo "Install Nodejs 6x"
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 apt-get install -y nodejs
+echo "****************"
 
 ## Copy configuration to real destinations
 cp /root/config/default /etc/nginx/sites-enabled/default
