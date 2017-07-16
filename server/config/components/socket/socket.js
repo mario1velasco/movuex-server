@@ -1,8 +1,9 @@
 import socketio from 'socket.io'
+import redis from 'socket.io-redis'
 
 const socket = (server) => {
   const io = socketio(server)
-
+  io.adapter(redis({host: 'localhost', port: 6379}))
   io.on('connection', (socket) => {
     console.log(`Connected ${socket.id} on instance`)
 
